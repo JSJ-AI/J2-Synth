@@ -8,14 +8,22 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#1a1008;--panel:#231608;--panel2:#2a1c0a;--metal:#3d2b12;
-  --cream:#f0dfa0;--amber:#e8a020;--orange:#d86010;--red:#c03010;
-  --green:#40c060;--blue:#3080c0;--led:#00ff88;
-  --knob:#4a3018;--knob2:#5a3c20;--screw:#6a4828;
-  --text:#f0dfa0;--muted:#8a6840;--label:#c8a060;
-  --shadow:rgba(0,0,0,0.6);
+  --bg:#020d10;--panel:#061418;--panel2:#0a1e24;--metal:#0e3040;
+  --cream:#a0eef8;--amber:#00d4ff;--orange:#00a8cc;--red:#c03010;
+  --green:#00ffcc;--blue:#00aaff;--led:#00ffee;
+  --knob:#083040;--knob2:#0a4058;--screw:#0e5068;
+  --text:#a0eef8;--muted:#2a7890;--label:#00c8e8;
+  --shadow:rgba(0,0,0,0.7);
 }
 html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
+
+/* SPECTRUM ANALYZER */
+.spectrum-section{background:linear-gradient(180deg,#020d10 0%,#041418 100%);border:2px solid var(--metal);border-radius:6px 6px 0 0;padding:10px 12px 6px;margin-bottom:0;border-bottom:none;}
+.spectrum-label{font-size:8px;letter-spacing:.4em;color:var(--label);text-transform:uppercase;margin-bottom:6px;text-align:center;}
+.spectrum-wrap{position:relative;background:#020d10;border:1px solid #0e3040;border-radius:3px;overflow:hidden;}
+canvas#spectrum-canvas{display:block;width:100%;height:100px;}
+.spectrum-freq-labels{display:flex;justify-content:space-between;padding:2px 4px;margin-top:1px;}
+.spectrum-freq-labels span{font-size:7px;color:var(--muted);letter-spacing:0;text-align:center;flex:1;}
 
 /* GRAIN OVERLAY */
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
@@ -26,19 +34,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
 
 /* HEADER */
 .synth-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 8px;}
-.synth-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.15em;color:var(--amber);text-shadow:0 0 20px rgba(232,160,32,0.5),0 2px 0 rgba(0,0,0,0.8);}
+.synth-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.15em;color:var(--amber);text-shadow:0 0 20px rgba(0,212,255,0.6),0 2px 0 rgba(0,0,0,0.8);}
 .synth-sub{font-size:10px;letter-spacing:.4em;color:var(--muted);text-transform:uppercase;}
 .power-section{display:flex;align-items:center;gap:16px;}
-.power-led{width:12px;height:12px;border-radius:50%;background:var(--led);box-shadow:0 0 8px var(--led),0 0 16px rgba(0,255,136,0.4);animation:ledpulse 2s ease-in-out infinite;}
+.power-led{width:12px;height:12px;border-radius:50%;background:var(--led);box-shadow:0 0 8px var(--led),0 0 16px rgba(0,255,238,0.5);animation:ledpulse 2s ease-in-out infinite;}
 @keyframes ledpulse{0%,100%{opacity:1;}50%{opacity:.6;}}
 .power-label{font-size:9px;letter-spacing:.3em;color:var(--muted);}
 
 /* MAIN CABINET */
-.cabinet{background:linear-gradient(180deg,#2e1e0a 0%,#1e1206 100%);border:2px solid var(--metal);border-radius:8px;padding:20px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,220,120,0.1);}
+.cabinet{background:linear-gradient(180deg,#071820 0%,#030e14 100%);border:2px solid var(--metal);border-radius:8px;padding:20px;box-shadow:0 8px 40px rgba(0,0,0,0.9),inset 0 1px 0 rgba(0,212,255,0.1);}
 
 /* SCREWS */
 .cabinet-inner{position:relative;padding:4px;}
-.screw{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#8a6840,#3a2810);border:1px solid #2a1a08;}
+.screw{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#0e5068,#041820);border:1px solid #030e14;}
 .screw::after{content:'';position:absolute;top:50%;left:50%;width:6px;height:1px;background:rgba(0,0,0,0.6);transform:translate(-50%,-50%) rotate(45deg);}
 .screw.tl{top:4px;left:4px;}
 .screw.tr{top:4px;right:4px;}
@@ -59,7 +67,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
 .knob-group{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
 .knob-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;}
 .knob-wrap:hover .knob-body{filter:brightness(1.2);}
-.knob-body{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--knob2),var(--knob));border:2px solid #6a4828;box-shadow:0 3px 8px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,200,80,0.2);position:relative;transition:filter .1s;user-select:none;}
+.knob-body{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--knob2),var(--knob));border:2px solid #0e5068;box-shadow:0 3px 8px rgba(0,0,0,0.8),inset 0 1px 0 rgba(0,212,255,0.15);position:relative;transition:filter .1s;user-select:none;}
 .knob-body.small{width:32px;height:32px;}
 .knob-dot{position:absolute;width:3px;height:10px;background:var(--amber);border-radius:2px;top:4px;left:50%;transform-origin:50% 100%;transform:translateX(-50%) rotate(0deg);}
 .knob-body.small .knob-dot{height:7px;top:3px;}
@@ -93,24 +101,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
 .vu-wrap{display:flex;gap:4px;align-items:flex-end;justify-content:center;height:60px;}
 .vu-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .vu-bar{width:8px;background:#1a1008;border:1px solid #2a1a08;border-radius:2px;height:50px;position:relative;overflow:hidden;}
-.vu-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(0deg,var(--green) 0%,var(--amber) 70%,var(--red) 95%);transition:height .05s;border-radius:1px;}
+.vu-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(0deg,#00ffee 0%,#00aaff 70%,#ff2266 95%);transition:height .05s;border-radius:1px;}
 .vu-label{font-size:7px;color:var(--muted);}
 
 /* OSCILLOSCOPE */
-.scope{background:#0a0f08;border:1px solid #1a3020;border-radius:3px;padding:4px;margin-top:8px;}
+.scope{background:#020d10;border:1px solid #0e3040;border-radius:3px;padding:4px;margin-top:8px;}
 canvas#scope-canvas{display:block;width:100%;height:60px;}
 
 /* KEYBOARD */
-.keyboard-section{background:linear-gradient(180deg,#1e1206 0%,#150e04 100%);border:2px solid var(--metal);border-radius:0 0 6px 6px;padding:16px 12px 12px;margin-top:0;}
+.keyboard-section{background:linear-gradient(180deg,#061418 0%,#030e14 100%);border:2px solid var(--metal);border-radius:0 0 6px 6px;padding:16px 12px 12px;margin-top:0;}
 .keyboard-label{font-size:8px;letter-spacing:.4em;color:var(--label);text-align:center;margin-bottom:10px;}
 .keyboard{display:flex;position:relative;height:120px;justify-content:center;user-select:none;}
 .key{position:relative;cursor:pointer;border-radius:0 0 4px 4px;transition:filter .05s;}
-.key.white{width:36px;height:120px;background:linear-gradient(180deg,#f5eed8 0%,#ecdfc0 100%);border:1px solid #b09868;margin:0 1px;z-index:1;box-shadow:2px 4px 6px rgba(0,0,0,0.4);}
-.key.white:hover,.key.white.active{background:linear-gradient(180deg,#e8d890 0%,#d4c070 100%);box-shadow:1px 2px 3px rgba(0,0,0,0.4);}
-.key.black{width:22px;height:75px;background:linear-gradient(180deg,#2a1a08 0%,#1a0e04 100%);border:1px solid #0a0804;position:absolute;z-index:2;box-shadow:2px 4px 8px rgba(0,0,0,0.8);}
-.key.black:hover,.key.black.active{background:linear-gradient(180deg,#4a3018 0%,#2a1a08 100%);}
-.key-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--muted);font-family:'Share Tech Mono',monospace;pointer-events:none;}
-.key.black .key-label{color:#6a4828;bottom:4px;}
+.key.white{width:36px;height:120px;background:linear-gradient(180deg,#d8f8ff 0%,#b0eef8 100%);border:1px solid #60c8e0;margin:0 1px;z-index:1;box-shadow:2px 4px 6px rgba(0,0,0,0.5);}
+.key.white:hover,.key.white.active{background:linear-gradient(180deg,#00d4ff 0%,#0088cc 100%);box-shadow:0 0 12px rgba(0,212,255,0.6),1px 2px 3px rgba(0,0,0,0.4);}
+.key.black{width:22px;height:75px;background:linear-gradient(180deg,#041018 0%,#020810 100%);border:1px solid #0a2030;position:absolute;z-index:2;box-shadow:2px 4px 8px rgba(0,0,0,0.9);}
+.key.black:hover,.key.black.active{background:linear-gradient(180deg,#0a4060 0%,#052030 100%);box-shadow:0 0 10px rgba(0,212,255,0.5);}
+.key-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:7px;color:#2a8898;font-family:'Share Tech Mono',monospace;pointer-events:none;}
+.key.black .key-label{color:#0a4060;bottom:4px;}
 
 /* MIDI SECTION */
 .midi-section{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
@@ -156,6 +164,15 @@ canvas#scope-canvas{display:block;width:100%;height:60px;}
 </head>
 <body>
 <div class="synth-wrap">
+
+  <!-- 31-BAND SPECTRUM ANALYZER -->
+  <div class="spectrum-section">
+    <div class="spectrum-label">31-Band Spectrum Analyzer</div>
+    <div class="spectrum-wrap">
+      <canvas id="spectrum-canvas" width="1060" height="100"></canvas>
+      <div class="spectrum-freq-labels" id="spectrum-labels"></div>
+    </div>
+  </div>
 
   <!-- HEADER -->
   <div class="synth-header">
@@ -651,24 +668,112 @@ function drawScope(){
   const c = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   requestAnimationFrame(drawScope);
-  c.fillStyle = '#0a0f08';
+  c.fillStyle = '#020d10';
   c.fillRect(0,0,W,H);
   if(!analyser) return;
   const data = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteTimeDomainData(data);
+  // Grid lines
+  c.strokeStyle = 'rgba(0,80,100,0.3)';
+  c.lineWidth = 0.5;
+  c.beginPath(); c.moveTo(0,H/2); c.lineTo(W,H/2); c.stroke();
+  c.beginPath(); c.moveTo(W/2,0); c.lineTo(W/2,H); c.stroke();
+  // Waveform
   c.beginPath();
-  c.strokeStyle = '#40c060';
+  c.strokeStyle = '#00d4ff';
   c.lineWidth = 1.5;
+  c.shadowBlur = 6;
+  c.shadowColor = '#00d4ff';
   const step = W/data.length;
   for(let i=0;i<data.length;i++){
     const y = (data[i]/128-1)*(H/2)+H/2;
     i===0?c.moveTo(0,y):c.lineTo(i*step,y);
   }
   c.stroke();
-  // Grid
-  c.strokeStyle = 'rgba(40,80,40,0.3)';
-  c.lineWidth = 0.5;
-  c.beginPath(); c.moveTo(0,H/2); c.lineTo(W,H/2); c.stroke();
+  c.shadowBlur = 0;
+}
+
+/* 31-BAND SPECTRUM ANALYZER */
+const BAND_FREQS = [20,25,31.5,40,50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150,4000,5000,6300,8000,10000,12500,16000,20000];
+const BAND_LABELS = ['20','25','31','40','50','63','80','100','125','160','200','250','315','400','500','630','800','1k','1.25k','1.6k','2k','2.5k','3.1k','4k','5k','6.3k','8k','10k','12.5k','16k','20k'];
+let peakHolds = new Array(31).fill(0);
+let peakTimers = new Array(31).fill(0);
+
+function buildSpectrumLabels(){
+  const container = document.getElementById('spectrum-labels');
+  BAND_LABELS.forEach(l => {
+    const s = document.createElement('span');
+    s.textContent = l;
+    container.appendChild(s);
+  });
+}
+
+function drawSpectrum(){
+  const canvas = document.getElementById('spectrum-canvas');
+  if(!canvas) return;
+  requestAnimationFrame(drawSpectrum);
+  const c = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  c.fillStyle = '#020d10';
+  c.fillRect(0,0,W,H);
+
+  // Grid lines
+  for(let db=0;db<=H;db+=H/4){
+    c.strokeStyle='rgba(0,60,80,0.4)';
+    c.lineWidth=0.5;
+    c.beginPath(); c.moveTo(0,db); c.lineTo(W,db); c.stroke();
+  }
+
+  if(!analyser){ return; }
+
+  const fftSize = 2048;
+  analyser.fftSize = fftSize;
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqData);
+
+  const nyquist = ctx ? ctx.sampleRate/2 : 22050;
+  const barW = (W / 31) - 2;
+  const now = Date.now();
+
+  for(let b=0; b<31; b++){
+    const freqLow  = b===0  ? 0 : (BAND_FREQS[b-1]+BAND_FREQS[b])/2;
+    const freqHigh = b===30 ? nyquist : (BAND_FREQS[b]+BAND_FREQS[b+1])/2;
+    const binLow  = Math.floor(freqLow  / nyquist * analyser.frequencyBinCount);
+    const binHigh = Math.ceil(freqHigh / nyquist * analyser.frequencyBinCount);
+    let sum=0, count=0;
+    for(let i=binLow;i<=binHigh&&i<freqData.length;i++){ sum+=freqData[i]; count++; }
+    const avg = count>0 ? sum/count/255 : 0;
+    const barH = avg * H;
+    const x = b * (barW+2) + 1;
+
+    // Gradient bar: cyan bottom → blue top
+    const grad = c.createLinearGradient(0, H, 0, H-barH);
+    grad.addColorStop(0,   '#00ffee');
+    grad.addColorStop(0.5, '#00aaff');
+    grad.addColorStop(0.85,'#0055ff');
+    grad.addColorStop(1,   '#ff2266');
+
+    c.fillStyle = grad;
+    c.shadowBlur = 6;
+    c.shadowColor = '#00d4ff';
+    c.fillRect(x, H-barH, barW, barH);
+    c.shadowBlur = 0;
+
+    // Peak hold
+    if(barH > peakHolds[b]){ peakHolds[b]=barH; peakTimers[b]=now+1200; }
+    else if(now > peakTimers[b]) peakHolds[b] = Math.max(0, peakHolds[b]-1.5);
+
+    if(peakHolds[b]>2){
+      c.fillStyle='#00ffee';
+      c.shadowBlur=4; c.shadowColor='#00ffee';
+      c.fillRect(x, H-peakHolds[b], barW, 2);
+      c.shadowBlur=0;
+    }
+
+    // Bar label tick
+    c.fillStyle='rgba(0,150,180,0.4)';
+    c.fillRect(x + barW/2, H-2, 1, 2);
+  }
 }
 
 function drawVU(){
@@ -1047,7 +1152,9 @@ function stopMIDI(){
 
 /* ══ INIT ══ */
 buildKeyboard();
+buildSpectrumLabels();
 drawScope();
+drawSpectrum();
 </script>
 </body>
 </html>
