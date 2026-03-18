@@ -151,6 +151,14 @@ canvas#scope-canvas{display:block;width:100%;height:60px;}
 .sustain-btn{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;border-radius:3px;border:1px solid var(--metal);background:var(--knob);color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase;}
 .sustain-btn.on{background:var(--orange);border-color:var(--amber);color:var(--cream);box-shadow:0 0 8px rgba(232,160,32,0.4);}
 
+/* MODE SWITCHER */
+.mode-switcher{position:fixed;top:12px;right:145px;z-index:998;display:flex;align-items:center;gap:0;border:1px solid #0e3040;border-radius:20px;overflow:hidden;box-shadow:0 0 12px rgba(0,212,255,0.2);}
+.mode-btn{font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:6px 14px;background:#041018;color:#2a7890;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.mode-btn.active{background:#00d4ff;color:#000;box-shadow:0 0 10px rgba(0,212,255,0.5);}
+.mode-btn:hover:not(.active){color:#00d4ff;}
+#view-simple{display:block;}
+#view-modular{display:none;}
+
 /* RESPONSIVE */
 @media(max-width:700px){
   .row-3{grid-template-columns:1fr 1fr;}
@@ -163,6 +171,14 @@ canvas#scope-canvas{display:block;width:100%;height:60px;}
 </style>
 </head>
 <body>
+
+<!-- MODE SWITCHER -->
+<div class="mode-switcher">
+  <button class="mode-btn active" id="btn-simple" onclick="switchMode('simple')">🎹 Simple</button>
+  <button class="mode-btn" id="btn-modular" onclick="switchMode('modular')">🎛️ Modular</button>
+</div>
+
+<div id="view-simple">
 <div class="synth-wrap">
 
   <!-- 31-BAND SPECTRUM ANALYZER -->
@@ -465,7 +481,11 @@ canvas#scope-canvas{display:block;width:100%;height:60px;}
 
     </div>
   </div>
-</div>
+</div><!-- end synth-wrap -->
+</div><!-- end view-simple -->
+
+<!-- MODULAR VIEW (loaded inline, hidden by default) -->
+<div id="view-modular" style="display:none"></div>
 
 <script>
 /* ══════════════════════════════════════════════
@@ -1148,6 +1168,51 @@ function stopMIDI(){
   document.getElementById('midi-play-btn').textContent='▶ Play';
   // Release all notes
   for(let n=0;n<128;n++) if(activeNotes[n]) noteOff(n);
+}
+
+/* ══ MODE SWITCHER ══ */
+let modularLoaded = false;
+
+function switchMode(mode){
+  document.getElementById('btn-simple').classList.toggle('active', mode==='simple');
+  document.getElementById('btn-modular').classList.toggle('active', mode==='modular');
+  document.getElementById('view-simple').style.display = mode==='simple' ? 'block' : 'none';
+  document.getElementById('view-modular').style.display = mode==='modular' ? 'block' : 'none';
+
+  if(mode==='modular' && !modularLoaded){
+    modularLoaded = true;
+    document.getElementById('view-modular').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:200px;color:#2a7890;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.2em;">
+        Loading Modular Synth...
+      </div>`;
+    fetch('synth2.html')
+      .then(r => r.text())
+      .then(html => {
+        // Extract just the body content and scripts
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const body = doc.body.innerHTML;
+        document.getElementById('view-modular').innerHTML = body;
+        // Re-run scripts from modular
+        doc.querySelectorAll('script').forEach(s => {
+          const ns = document.createElement('script');
+          ns.textContent = s.textContent;
+          document.body.appendChild(ns);
+        });
+      })
+      .catch(() => {
+        // Fallback if fetch fails (local file:// protocol)
+        document.getElementById('view-modular').innerHTML = `
+          <div style="text-align:center;padding:60px 20px;font-family:'Share Tech Mono',monospace;">
+            <div style="font-size:32px;margin-bottom:16px">🎛️</div>
+            <div style="color:#00d4ff;font-size:14px;letter-spacing:.2em;margin-bottom:12px">MODULAR SYNTH</div>
+            <div style="color:#2a7890;font-size:11px;line-height:2">To use the Modular Synth, upload <strong style="color:#a0eef8">synth2.html</strong> to your repo<br>
+            and visit <strong style="color:#a0eef8">your-site/synth2.html</strong> directly,<br>
+            or upload both files and the switcher works automatically.</div>
+            <a href="synth2.html" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#00d4ff;color:#000;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.2em;text-decoration:none;border-radius:2px;font-weight:700">OPEN MODULAR →</a>
+          </div>`;
+      });
+  }
 }
 
 /* ══ INIT ══ */
